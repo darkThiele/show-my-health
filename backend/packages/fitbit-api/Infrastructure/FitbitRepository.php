@@ -7,6 +7,11 @@ use Packages\FitbitApi\Domain\Token;
 
 class FitbitRepository
 {
+    public function refreshOAuth2Token()
+    {
+
+    }
+
     public function getFitbitData(Token $token, string $uri)
     {
         $response = Http::withHeaders([
