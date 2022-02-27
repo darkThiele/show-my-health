@@ -3,6 +3,7 @@ import datetime
 import fitbit
 import time
 import dotenv
+import math
 sys.path.append(os.path.join('../..', 'core'))
     
 import core
@@ -13,10 +14,15 @@ def update_token(token):
     dotenv.set_key(dotenv_file, "ACCESS_TOKEN", token.access_token)
     dotenv.set_key(dotenv_file, "REFRESH_TOKEN", token.refresh_token)
 
+def get_percentile(values, p):
+    length = len(values) # 全体の個数
+    target_index = math.floor(length * p)
+    return sorted(values)[target_index]
+
 def get_heart_rate(datas):
     values = list(map(lambda x: x['value'], datas))
     latest = values[-1]
-    return (latest, min(values), max(values))
+    return (latest, get_percentile(values, 0.005), get_percentile(values, 0.995))
 
 def to_ascii_code_float(str):
     ret = []
@@ -61,9 +67,9 @@ if __name__ == "__main__":
         latest, minimum, maximum = get_heart_rate(dataset)
 
         val = f"{latest:03} >{minimum:03} <{maximum:03}   "
+        print(f"send: {val}")
         ascii_val = to_ascii_code_float(val)
 
         for oscClient, ascii in zip(vrcOscClients, ascii_val):
-            print(f"send_message {ascii}")
             oscClient.send_message(ascii)
         time.sleep(30)
